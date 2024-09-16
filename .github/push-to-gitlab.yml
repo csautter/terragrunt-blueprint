@@ -1,6 +1,10 @@
 name: push alert
 
-on: [push, create]
+on:
+  push:
+  pull_request:
+    types:
+      - opened
 
 env:
     GITLAB_REPOSITORY: "gitlab.com/csautter/terragrunt-blueprint.git"
