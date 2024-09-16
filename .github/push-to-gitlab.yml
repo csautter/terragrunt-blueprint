@@ -1,0 +1,20 @@
+name: push alert
+
+on: [push, create]
+
+env:
+    GITLAB_REPOSITORY: "gitlab.com/csautter/terragrunt-blueprint.git"
+
+jobs:
+  push:
+    name: Push to Github
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+        shell: bash
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@${{ env.GITLAB_REPOSITORY }}
+          git push gitlab
