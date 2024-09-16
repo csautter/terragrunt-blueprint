@@ -1,0 +1,30 @@
+name: push alert
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+    GITLAB_REPOSITORY: "gitlab.com/csautter/terragrunt-blueprint.git"
+
+jobs:
+  push:
+    name: Push to Github
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to Gitlab
+        shell: bash
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git remote add gitlab https://${{ secrets.GITLAB_TOKEN_NAME }}:${{ secrets.GITLAB_TOKEN }}@${{ env.GITLAB_REPOSITORY }}
+          echo "Pushing to Gitlab Branch: ${GITHUB_HEAD_REF:-GITHUB_REF#refs/heads/}"
+          git push -f gitlab HEAD:${GITHUB_HEAD_REF:-GITHUB_REF#refs/heads/}
