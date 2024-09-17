@@ -26,5 +26,19 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git remote add gitlab https://${{ secrets.GITLAB_TOKEN_NAME }}:${{ secrets.GITLAB_TOKEN }}@${{ env.GITLAB_REPOSITORY }}
-          echo "Pushing to Gitlab Branch: ${GITHUB_HEAD_REF:-GITHUB_REF#refs/heads/}"
-          git push -f gitlab HEAD:${GITHUB_HEAD_REF:-GITHUB_REF#refs/heads/}
+          
+          if [ -z "$GITHUB_REF" ]; then
+            echo "GITHUB_REF is not set or is empty"
+          else
+            echo "GITHUB_REF is set to: $GITHUB_REF"
+            echo "Pushing to Gitlab Branch: ${GITHUB_REF#refs/heads/}"
+            git push -f gitlab HEAD:${GITHUB_REF#refs/heads/}
+          fi
+          
+          if [ "" = "${{ github.head_ref }}" ]; then
+            echo "github.head_ref is not set or is empty"
+          else
+            echo "github.head_ref is set to: ${{ github.head_ref }}"
+            echo "Pushing to Gitlab Branch: ${{ github.head_ref }}"
+            git push -f gitlab HEAD:${{ github.head_ref }}
+          fi
