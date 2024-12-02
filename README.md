@@ -2,10 +2,12 @@
 This repository contains a Terragrunt blueprint with a common project structure.
 
 ## Features
-- [x] AWS Provider
-- [x] AWS Dummy Module
+- [x] AWS provider
+- [x] AWS dummy module
+- [x] STACKIT cloud dummy module
 - [x] local backend
 - [x] gitlab remote backend
+- [ ] STACKIT cloud s3 remote backend
 - [ ] add some
 
 ## Apply aws_dummy

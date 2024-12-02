@@ -7,4 +7,6 @@ terraform {
 }
 
 inputs = {
+  env        = local.env.locals.env
+  project_id = local.env.locals.project_id
 }
