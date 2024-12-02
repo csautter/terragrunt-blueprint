@@ -7,7 +7,7 @@ This repository contains a Terragrunt blueprint with a common project structure.
 - [x] STACKIT cloud dummy module
 - [x] local backend
 - [x] gitlab remote backend
-- [ ] STACKIT cloud s3 remote backend
+- [x] STACKIT cloud s3 remote backend
 - [ ] add some
 
 ## Apply aws dummy
