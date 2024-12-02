@@ -59,6 +59,13 @@ Use the recommended "key flow" authentication. You should end up with two files 
   ```
   _you can generate and download this file in the stackit cloud web console_
 
+### s3 state backend
+If you like to use the s3 state backend you need to set the bucket credentials as environment variables:
+```bash
+export AWS_ACCESS_KEY_ID=AAAAAAAAAAAAAAAAAAAA
+export AWS_SECRET_ACCESS_KEY=BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+```
+
 ### run terragrunt
 ```bash
 cd deployments/terraform/env/stackit_dev/stackit_dummy
