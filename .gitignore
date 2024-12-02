@@ -37,3 +37,4 @@ override.tf.json
 terraform.rc
 
 .terragrunt-cache/
+**/modules/**/.terraform.lock.hcl

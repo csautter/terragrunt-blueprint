@@ -7,7 +7,7 @@ include "env" {
   expose = true
 }
 
-include "provider_vault_config" {
+include "provider_aws_config" {
   path   = "${get_terragrunt_dir()}/../../_env/provider_aws_config.hcl"
   expose = true
 }
