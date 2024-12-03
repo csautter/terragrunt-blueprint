@@ -31,3 +31,6 @@ terraform {
     execute  = ["trivy", "config", "."]
   }
 }
+
+terraform_version_constraint  = ">= 1.10.0"
+terragrunt_version_constraint = ">= 0.69.3"
