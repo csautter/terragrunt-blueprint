@@ -15,12 +15,14 @@ remote_state {
 
 terraform {
   before_hook "terraform_fmt" {
-    commands = ["apply", "plan"]
-    execute  = ["terraform", "fmt", "-recursive"]
+    commands    = ["apply", "plan", "fmt"]
+    execute     = ["terraform", "fmt", "-recursive"]
+    working_dir = get_parent_terragrunt_dir()
   }
   before_hook "terragrunt_hclfmt" {
-    commands = ["apply", "plan"]
-    execute  = ["terragrunt", "hclfmt"]
+    commands    = ["apply", "plan", "fmt"]
+    execute     = ["terragrunt", "hclfmt"]
+    working_dir = get_parent_terragrunt_dir()
   }
   before_hook "tflint" {
     commands = local.tflint_hook_enabled ? ["apply", "plan"] : []
