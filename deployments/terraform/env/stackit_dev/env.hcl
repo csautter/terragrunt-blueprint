@@ -1,5 +1,5 @@
 locals {
-  env                           = "dev"
+  env                           = "stackit_dev"
   region                        = "eu01"
   stackit_enable_beta_resources = true
 
