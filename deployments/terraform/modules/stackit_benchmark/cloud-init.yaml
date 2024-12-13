@@ -1,0 +1,11 @@
+#cloud-config
+apt_upgrade: true
+
+package_update: true
+
+packages:
+  - sudo
+  - curl
+  - wget
+  - vim
+  - locales
