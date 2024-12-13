@@ -1,8 +1,14 @@
 locals {
-  env_locals                = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_local = try(read_terragrunt_config(find_in_parent_folders("env_local.hcl")), { locals = {} })
+  env       = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  config = merge(
+    local.env.locals,
+    local.env_local.locals
+  )
+
   tflint_hook_enabled       = get_env("DISABLE_TFLINT_HOOK", "false") == "true" ? false : true
   trivy_hook_enabled        = get_env("DISABLE_TRIVY_HOOK", "false") == "true" ? false : true
-  backend_target_evaluation = can(local.env_locals.locals.state_backend) ? local.env_locals.locals.state_backend : "local"
+  backend_target_evaluation = can(local.config.state_backend) ? local.config.state_backend : "local"
   backend_target            = contains(["http_gitlab", "local", "s3_stackit"], local.backend_target_evaluation) ? local.backend_target_evaluation : "local"
   backend_config            = read_terragrunt_config(find_in_parent_folders("backend_${local.backend_target}.hcl"))
 }

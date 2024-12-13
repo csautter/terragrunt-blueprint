@@ -1,5 +1,10 @@
 locals {
-  env_locals = read_terragrunt_config(find_in_parent_folders("${get_original_terragrunt_dir()}/../env.hcl"))
+  env_local = try(read_terragrunt_config(find_in_parent_folders("env_local.hcl")), { locals = {} })
+  env       = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  config = merge(
+    local.env.locals,
+    local.env_local.locals
+  )
 }
 
 remote_state {
@@ -12,10 +17,10 @@ remote_state {
   }
 
   config = {
-    bucket                             = local.env_locals.locals.state_s3_bucket
-    key                                = "${local.env_locals.locals.env}_${basename(get_original_terragrunt_dir())}.tfstate"
-    endpoint                           = "https://object.storage.${local.env_locals.locals.region}.onstackit.cloud"
-    region                             = local.env_locals.locals.region
+    bucket                             = local.config.state_s3_bucket
+    key                                = "${local.config.env}_${basename(get_original_terragrunt_dir())}.tfstate"
+    endpoint                           = "https://object.storage.${local.config.region}.onstackit.cloud"
+    region                             = local.config.region
     skip_credentials_validation        = true
     skip_region_validation             = true
     skip_s3_checksum                   = true

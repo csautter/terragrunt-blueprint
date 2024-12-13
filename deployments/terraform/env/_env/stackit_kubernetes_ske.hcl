@@ -8,10 +8,9 @@ locals {
 }
 
 terraform {
-  source = "${get_terragrunt_dir()}/../../../modules//stackit_dummy"
+  source = "${get_terragrunt_dir()}/../../../modules//stackit_kubernetes_ske"
 }
 
 inputs = {
-  env        = local.config.env
   project_id = local.config.project_id
 }
