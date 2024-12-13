@@ -8,6 +8,12 @@ This repository contains a Terragrunt blueprint with a common project structure.
 - [x] local backend
 - [x] gitlab remote backend
 - [x] STACKIT cloud s3 remote backend
+- [x] override variables in env_local.hcl file
+- [x] STACKIT ske kubernetes module
+- [ ] STACKIT benchmark module
+- [x] helm provider
+- [x] kubernetes provider
+- [x] helm chart module
 - [ ] add some
 
 ## Apply aws dummy
