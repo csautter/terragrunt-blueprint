@@ -1,5 +1,10 @@
 locals {
-  env = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_local = try(read_terragrunt_config(find_in_parent_folders("env_local.hcl")), { locals = {} })
+  env       = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  config = merge(
+    local.env.locals,
+    local.env_local.locals
+  )
 }
 
 terraform {
@@ -7,6 +12,6 @@ terraform {
 }
 
 inputs = {
-  env        = local.env.locals.env
-  project_id = local.env.locals.project_id
+  env        = local.config.env
+  project_id = local.config.project_id
 }
