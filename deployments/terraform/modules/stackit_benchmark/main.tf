@@ -1,7 +1,3 @@
-locals {
-
-}
-
 resource "stackit_key_pair" "keypair" {
   name       = "default-keypair"
   public_key = chomp(file(local.ssh_public_key_path))
@@ -15,14 +11,12 @@ resource "stackit_server" "bench" {
     size              = 64
     source_type       = "image"
     source_id         = "59838a89-51b1-4892-b57f-b3caf598ee2f"
-    performance_class = "storage_premium_perf1"
+    performance_class = local.boot_volume_performance_class
   }
   name         = "bench-${replace(var.env, "_", "-")}-${each.value}"
   machine_type = each.value
   keypair_name = stackit_key_pair.keypair.name
   user_data    = file("${path.module}/cloud-init.yaml")
-
-
 }
 
 resource "null_resource" "provision" {
@@ -41,7 +35,7 @@ resource "null_resource" "provision" {
 
   provisioner "remote-exec" {
     inline = [
-      "jq '.provider.name = \"stackit\" | .provider.instance_type = \"${each.value}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json"
+      "jq '.provider.name = \"stackit\" | .provider.disk_type = \"${local.boot_volume_performance_class}\" | | .provider.instance_type = \"${each.value}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json"
     ]
   }
 
