@@ -30,7 +30,9 @@ resource "null_resource" "provision" {
   }
 
   provisioner "remote-exec" {
-    script = "${path.module}/provision.sh"
+    inline = [
+      "curl -sL https://yabs.sh | bash -s -- -j -w \"/tmp/benchmark.json\" -s \"${join(",", var.yabdb_urls)}\""
+    ]
   }
 
   provisioner "remote-exec" {
