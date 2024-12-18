@@ -32,10 +32,12 @@ output "compute_engine_servers_sku_map" {
 }
 */
 
+/*
 output "compute_engine_servers_sku_map_filtered" {
   value       = local.compute_engine_servers_sku_map_filtered
   description = "The compute engine servers SKU map filtered"
 }
+*/
 
 output "benchmark_machine_count" {
   value       = local.benchmark_machine_count

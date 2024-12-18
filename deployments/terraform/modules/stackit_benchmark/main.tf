@@ -4,7 +4,7 @@ resource "stackit_key_pair" "keypair" {
 }
 
 resource "stackit_server" "bench" {
-  for_each          = toset(local.machine_types)
+  for_each          = local.compute_engine_servers_sku_map_filtered
   project_id        = var.project_id
   availability_zone = local.availability_zones[0]
   boot_volume = {
@@ -13,14 +13,14 @@ resource "stackit_server" "bench" {
     source_id         = "59838a89-51b1-4892-b57f-b3caf598ee2f"
     performance_class = local.boot_volume_performance_class
   }
-  name         = "bench-${replace(var.env, "_", "-")}-${each.value}"
-  machine_type = each.value
+  name         = "bench-${replace(var.env, "_", "-")}-${each.value["attributes"]["flavor"]}"
+  machine_type = each.value["attributes"]["flavor"]
   keypair_name = stackit_key_pair.keypair.name
   user_data    = file("${path.module}/cloud-init.yaml")
 }
 
 resource "null_resource" "provision" {
-  for_each = toset(local.machine_types)
+  for_each = local.compute_engine_servers_sku_map_filtered
 
   connection {
     type        = "ssh"
@@ -37,15 +37,24 @@ resource "null_resource" "provision" {
 
   provisioner "remote-exec" {
     inline = [
-      "jq '.provider.name = \"stackit\" | .provider.disk_type = \"${local.boot_volume_performance_class}\" | | .provider.instance_type = \"${each.value}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json"
+      "jq '.provider.name = \"stackit\" | .provider.disk_type = \"${local.boot_volume_performance_class}\" | .provider.instance_type = \"${each.value["attributes"]["flavor"]}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json"
     ]
   }
 
   provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/benchmark.json ${path.module}/bench/${timestamp()}-${local.availability_zones[0]}-${each.value}.json"
+    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/benchmark.json ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}.json"
   }
 
   depends_on = [stackit_server.bench, stackit_server_network_interface_attach.nic_attachment]
+}
+
+resource "local_file" "extended_benchmark_info" {
+  for_each = local.compute_engine_servers_sku_map_filtered
+
+  content  = jsonencode(each.value)
+  filename = "${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_extended.json"
+
+  depends_on = [null_resource.provision]
 }
 
 resource "stackit_network" "network" {
@@ -56,20 +65,20 @@ resource "stackit_network" "network" {
 }
 
 resource "stackit_network_interface" "nic" {
-  for_each           = toset(local.machine_types)
+  for_each           = local.compute_engine_servers_sku_map_filtered
   project_id         = var.project_id
   network_id         = stackit_network.network.network_id
   security_group_ids = [stackit_security_group.this.security_group_id]
 }
 
 resource "stackit_public_ip" "public_ip" {
-  for_each             = toset(local.machine_types)
+  for_each             = local.compute_engine_servers_sku_map_filtered
   project_id           = var.project_id
   network_interface_id = stackit_network_interface.nic[each.key].network_interface_id
 }
 
 resource "stackit_server_network_interface_attach" "nic_attachment" {
-  for_each             = toset(local.machine_types)
+  for_each             = local.compute_engine_servers_sku_map_filtered
   project_id           = var.project_id
   server_id            = stackit_server.bench[each.key].server_id
   network_interface_id = stackit_network_interface.nic[each.key].network_interface_id
@@ -77,7 +86,7 @@ resource "stackit_server_network_interface_attach" "nic_attachment" {
 
 resource "stackit_security_group" "this" {
   project_id = var.project_id
-  name       = "example-security-group"
+  name       = "benchmark-security-group"
   stateful   = true
 }
 
