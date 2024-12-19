@@ -4,16 +4,12 @@ resource "stackit_key_pair" "keypair" {
 }
 
 resource "stackit_server" "bench" {
-  for_each          = local.compute_engine_servers_sku_map_filtered
+  for_each          = local.compute_engine_servers_sku_map_filtered_test
   project_id        = var.project_id
   availability_zone = local.availability_zones[0]
   boot_volume = {
-    size        = 64
-    source_type = "image"
-    # ARM64 Ubuntu 24.04 -> 088dbb82-3512-40d7-bc47-6ee4f64ae2d5
-    # x86_64 Ubuntu 24.04 -> 59838a89-51b1-4892-b57f-b3caf598ee2f
-    source_id         = each.value["attributes"]["hardware"] == "ARM" ? "088dbb82-3512-40d7-bc47-6ee4f64ae2d5" : "59838a89-51b1-4892-b57f-b3caf598ee2f"
-    performance_class = local.boot_volume_performance_class
+    source_type = "volume"
+    source_id   = stackit_volume.bench[each.key].volume_id
   }
   name         = "bench-${replace(var.env, "_", "-")}-${each.value["attributes"]["flavor"]}"
   machine_type = each.value["attributes"]["flavor"]
@@ -21,8 +17,27 @@ resource "stackit_server" "bench" {
   user_data    = file("${path.module}/cloud-init.yaml")
 }
 
+resource "stackit_volume" "bench" {
+  for_each          = local.compute_engine_servers_sku_map_filtered_test
+  project_id        = var.project_id
+  name              = "bench-${replace(var.env, "_", "-")}-${each.value["attributes"]["flavor"]}"
+  availability_zone = local.availability_zones[0]
+  size              = 64
+  performance_class = local.boot_volume_performance_class
+  source = {
+    type = "image"
+    # ARM64 Ubuntu 24.04 -> 088dbb82-3512-40d7-bc47-6ee4f64ae2d5
+    # x86_64 Ubuntu 24.04 -> 59838a89-51b1-4892-b57f-b3caf598ee2f
+    id = each.value["attributes"]["hardware"] == "ARM" ? "088dbb82-3512-40d7-bc47-6ee4f64ae2d5" : "59838a89-51b1-4892-b57f-b3caf598ee2f"
+  }
+  labels = {
+    "env" = var.env
+    "app" = "benchmark"
+  }
+}
+
 resource "null_resource" "provision" {
-  for_each = local.compute_engine_servers_sku_map_filtered
+  for_each = local.compute_engine_servers_sku_map_filtered_test
 
   connection {
     type        = "ssh"
@@ -51,7 +66,7 @@ resource "null_resource" "provision" {
 }
 
 resource "local_file" "extended_benchmark_info" {
-  for_each = local.compute_engine_servers_sku_map_filtered
+  for_each = local.compute_engine_servers_sku_map_filtered_test
 
   content  = jsonencode(each.value)
   filename = "${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_extended.json"
@@ -67,20 +82,20 @@ resource "stackit_network" "network" {
 }
 
 resource "stackit_network_interface" "nic" {
-  for_each           = local.compute_engine_servers_sku_map_filtered
+  for_each           = local.compute_engine_servers_sku_map_filtered_test
   project_id         = var.project_id
   network_id         = stackit_network.network.network_id
   security_group_ids = [stackit_security_group.this.security_group_id]
 }
 
 resource "stackit_public_ip" "public_ip" {
-  for_each             = local.compute_engine_servers_sku_map_filtered
+  for_each             = local.compute_engine_servers_sku_map_filtered_test
   project_id           = var.project_id
   network_interface_id = stackit_network_interface.nic[each.key].network_interface_id
 }
 
 resource "stackit_server_network_interface_attach" "nic_attachment" {
-  for_each             = local.compute_engine_servers_sku_map_filtered
+  for_each             = local.compute_engine_servers_sku_map_filtered_test
   project_id           = var.project_id
   server_id            = stackit_server.bench[each.key].server_id
   network_interface_id = stackit_network_interface.nic[each.key].network_interface_id
