@@ -36,11 +36,11 @@ locals {
   }
 
   compute_engine_servers_sku_map_filtered = {
-    for sku, server in local.compute_engine_servers_sku_map : sku => server if(server["attributes"]["hardware"] != "GPU" && server["attributes"]["metro"] == false && server["price"] < 1.0 && server["attributes"]["ram"] >= 1.5)
+    for sku, server in local.compute_engine_servers_sku_map : sku => server if(contains(["GPU"], server["attributes"]["hardware"]) == false && server["attributes"]["metro"] == false && server["price"] < 1.0 && server["attributes"]["ram"] >= 1.5)
   }
 
   compute_engine_servers_sku_map_filtered_test = {
-    for sku, server in local.compute_engine_servers_sku_map_filtered : sku => server if(server["attributes"]["flavor"] == "s1.2")
+    for sku, server in local.compute_engine_servers_sku_map_filtered : sku => server if(server["attributes"]["flavor"] == "g1r.1d")
   }
 
   benchmark_machine_count   = length(local.compute_engine_servers_sku_map_filtered)

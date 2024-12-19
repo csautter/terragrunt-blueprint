@@ -8,9 +8,11 @@ resource "stackit_server" "bench" {
   project_id        = var.project_id
   availability_zone = local.availability_zones[0]
   boot_volume = {
-    size              = 64
-    source_type       = "image"
-    source_id         = "59838a89-51b1-4892-b57f-b3caf598ee2f"
+    size        = 64
+    source_type = "image"
+    # ARM64 Ubuntu 24.04 -> 088dbb82-3512-40d7-bc47-6ee4f64ae2d5
+    # x86_64 Ubuntu 24.04 -> 59838a89-51b1-4892-b57f-b3caf598ee2f
+    source_id         = each.value["attributes"]["hardware"] == "ARM" ? "088dbb82-3512-40d7-bc47-6ee4f64ae2d5" : "59838a89-51b1-4892-b57f-b3caf598ee2f"
     performance_class = local.boot_volume_performance_class
   }
   name         = "bench-${replace(var.env, "_", "-")}-${each.value["attributes"]["flavor"]}"
