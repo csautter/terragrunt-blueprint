@@ -48,18 +48,23 @@ resource "null_resource" "provision" {
 
   provisioner "remote-exec" {
     inline = [
-      "curl -sL https://yabs.sh | bash -s -- -j -w \"/tmp/benchmark.json\" -s \"${join(",", var.yabdb_urls)}\""
-    ]
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "jq '.provider.name = \"stackit\" | .provider.disk_type = \"${local.boot_volume_performance_class}\" | .provider.instance_type = \"${each.value["attributes"]["flavor"]}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json"
+      "curl -sL https://yabs.sh | bash -s -- -j -w \"/tmp/benchmark.json\" -s \"${join(",", var.yabdb_urls)}\"",
+      "jq '.provider.name = \"stackit\" | .provider.disk_type = \"${local.boot_volume_performance_class}\" | .provider.instance_type = \"${each.value["attributes"]["flavor"]}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json",
+      "lscpu > /tmp/lscpu.txt",
+      "cat /proc/cpuinfo > /tmp/cpuinfo.txt",
     ]
   }
 
   provisioner "local-exec" {
     command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/benchmark.json ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}.json"
+  }
+
+  provisioner "local-exec" {
+    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/lscpu.txt ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_lscpu.txt"
+  }
+
+  provisioner "local-exec" {
+    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/cpuinfo.txt ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_cpuinfo.txt"
   }
 
   depends_on = [stackit_server.bench, stackit_server_network_interface_attach.nic_attachment]
