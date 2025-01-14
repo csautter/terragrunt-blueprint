@@ -6,7 +6,7 @@ resource "stackit_key_pair" "keypair" {
 resource "stackit_server" "bench" {
   for_each          = local.compute_engine_servers_sku_map_filtered_test
   project_id        = var.project_id
-  availability_zone = local.availability_zones[0]
+  availability_zone = local.current_availability_zone
   boot_volume = {
     source_type = "volume"
     source_id   = stackit_volume.bench[each.key].volume_id
@@ -21,7 +21,7 @@ resource "stackit_volume" "bench" {
   for_each          = local.compute_engine_servers_sku_map_filtered_test
   project_id        = var.project_id
   name              = "bench-${replace(var.env, "_", "-")}-${each.value["attributes"]["flavor"]}"
-  availability_zone = local.availability_zones[0]
+  availability_zone = local.current_availability_zone
   size              = 64
   performance_class = local.boot_volume_performance_class
   source = {
@@ -34,40 +34,6 @@ resource "stackit_volume" "bench" {
     "env" = var.env
     "app" = "benchmark"
   }
-}
-
-resource "null_resource" "provision_yabs" {
-  for_each = local.compute_engine_servers_sku_map_filtered_test
-
-  connection {
-    type        = "ssh"
-    user        = "ubuntu"
-    private_key = file(local.ssh_private_key_path)
-    host        = stackit_public_ip.public_ip[each.key].ip
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "curl -sL https://yabs.sh | bash -s -- -j -w \"/tmp/benchmark.json\" -s \"${join(",", var.yabdb_urls)}\"",
-      "jq '.provider.name = \"stackit\" | .provider.disk_type = \"${local.boot_volume_performance_class}\" | .provider.instance_type = \"${each.value["attributes"]["flavor"]}\" | .provider.availability_zone = \"${local.availability_zones[0]}\"' /tmp/benchmark.json | sponge /tmp/benchmark.json",
-      "lscpu > /tmp/lscpu.txt",
-      "cat /proc/cpuinfo > /tmp/cpuinfo.txt",
-    ]
-  }
-
-  provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/benchmark.json ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}.json"
-  }
-
-  provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/lscpu.txt ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_lscpu.txt"
-  }
-
-  provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/bench/ && scp -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/tmp/cpuinfo.txt ${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_cpuinfo.txt"
-  }
-
-  depends_on = [stackit_server.bench, stackit_server_network_interface_attach.nic_attachment]
 }
 
 resource "null_resource" "provision_pts" {
@@ -88,15 +54,16 @@ resource "null_resource" "provision_pts" {
   provisioner "remote-exec" {
     inline = [
       "sudo mv /tmp/phoronix-test-suite.xml /etc/phoronix-test-suite.xml",
-      "sudo git clone --depth=1 https://github.com/phoronix-test-suite/phoronix-test-suite.git /opt/phoronix-test-suite",
-      "sudo cd /opt/phoronix-test-suite && sudo bash /opt/phoronix-test-suite/install-sh",
-      "sudo apt-get install -y php-cli php-xml postgresql-client-common",
-      "sudo TEST_RESULTS_NAME=${each.value["attributes"]["flavor"]}_${timestamp()} TEST_RESULTS_IDENTIFIER=${each.value["attributes"]["flavor"]} FORCE_TIMES_TO_RUN=2 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=${each.value["price"]} phoronix-test-suite batch-benchmark nginx apache node-web-tooling hammerdb-postgresql redis"
+      "sudo git clone -b feat/cost_calculation_precision --depth=1 https://github.com/csautter/phoronix-test-suite.git /opt/phoronix-test-suite",
+      "cd /opt/phoronix-test-suite && sudo bash /opt/phoronix-test-suite/install-sh",
+      "sudo apt-get update",
+      "sudo apt-get install -y php-cli php-xml",
+      "sudo TEST_RESULTS_NAME=stackit_${local.current_availability_zone}_${each.value["attributes"]["flavor"]}_${timestamp()} TEST_RESULTS_IDENTIFIER=stackit_${local.current_availability_zone}_${each.value["attributes"]["flavor"]} FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=${each.value["price"]} phoronix-test-suite batch-benchmark nginx apache node-web-tooling redis phpbench pybench scikit-learn stress-ng"
     ]
   }
 
   provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/phoronix-test-results/${each.value["attributes"]["flavor"]}/ && scp -r -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/var/lib/phoronix-test-suite/test-results/* ${path.module}/phoronix-test-results/${each.value["attributes"]["flavor"]}/"
+    command = "mkdir -p ${path.module}/phoronix-test-results/ && scp -r -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/var/lib/phoronix-test-suite/test-results/* ${path.module}/phoronix-test-results/"
   }
 }
 
@@ -105,8 +72,6 @@ resource "local_file" "extended_benchmark_info" {
 
   content  = jsonencode(each.value)
   filename = "${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_extended.json"
-
-  depends_on = [null_resource.provision_yabs]
 }
 
 resource "stackit_network" "network" {
