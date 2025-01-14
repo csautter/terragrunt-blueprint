@@ -9,4 +9,7 @@ packages:
   - wget
   - vim
   - locales
-  - moreutils
+  - php-cli
+  - php-xml
+  - unzip
+  - make
