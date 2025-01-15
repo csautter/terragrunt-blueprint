@@ -75,7 +75,7 @@ resource "azurerm_linux_virtual_machine" "benchmark" {
 }
 
 resource "null_resource" "provision_pts" {
-  for_each = toset(local.machine_types)
+  for_each = azurerm_linux_virtual_machine.benchmark
 
   connection {
     type        = "ssh"
@@ -92,13 +92,13 @@ resource "null_resource" "provision_pts" {
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get -o DPkg::Lock::Timeout=300 update",
-      "sudo apt-get -o DPkg::Lock::Timeout=300 install -y php-cli php-xml unzip curl wget vim locales jq git",
+      "sudo apt-get -o DPkg::Lock::Timeout=300 install -y php-cli php-xml unzip curl wget vim locales jq git make",
       "sudo mv /tmp/phoronix-test-suite.xml /etc/phoronix-test-suite.xml",
       "sudo git clone -b feat/cost_calculation_precision --depth=1 https://github.com/csautter/phoronix-test-suite.git /opt/phoronix-test-suite",
       "cd /opt/phoronix-test-suite && sudo bash /opt/phoronix-test-suite/install-sh",
-      "export COST_PERF_PER_DOLLAR=$(curl -sG https://prices.azure.com/api/retail/prices --data-urlencode \"currencyCode=EUR\" --data-urlencode \"\\$filter=serviceName eq 'Virtual Machines' and armRegionName eq 'germanywestcentral' and armSkuName eq '${each.value}' and priceType eq 'Consumption'\" | jq -r \".Items[] | select(all(.skuName; contains(\\\"Spot\\\") | not)) | select(all(.productName; contains(\\\"Windows\\\") | not)) | select(all(.meterName; contains(\\\"Low\\\") | not)) | .unitPrice\")",
+      "export COST_PERF_PER_DOLLAR=$(curl -sG https://prices.azure.com/api/retail/prices --data-urlencode \"currencyCode=EUR\" --data-urlencode \"\\$filter=serviceName eq 'Virtual Machines' and armRegionName eq 'germanywestcentral' and armSkuName eq '${each.value.size}' and priceType eq 'Consumption'\" | jq -r \".Items[] | select(all(.skuName; contains(\\\"Spot\\\") | not)) | select(all(.productName; contains(\\\"Windows\\\") | not)) | select(all(.meterName; contains(\\\"Low\\\") | not)) | select(all(.productName; contains(\\\"Virtual Machines\\\"))) | .unitPrice\")",
       "echo \"COST_PERF_PER_DOLLAR=$COST_PERF_PER_DOLLAR\"",
-      "sudo TEST_RESULTS_NAME=azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value}_${timestamp()} TEST_RESULTS_IDENTIFIER=azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value} FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" phoronix-test-suite batch-benchmark nginx apache node-web-tooling redis pts/stress-ng-1.11.0"
+      "sudo TEST_RESULTS_NAME=\"azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value.size}_${timestamp()}\" TEST_RESULTS_IDENTIFIER=\"azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value.size}\" FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=$COST_PERF_PER_DOLLAR phoronix-test-suite batch-benchmark nginx apache redis pts/stress-ng-1.13.0"
     ]
   }
 

@@ -57,7 +57,7 @@ resource "null_resource" "provision_pts" {
       "sudo git clone -b feat/cost_calculation_precision --depth=1 https://github.com/csautter/phoronix-test-suite.git /opt/phoronix-test-suite",
       "sudo apt-get -o DPkg::Lock::Timeout=300 install -y php-cli php-xml unzip curl wget vim locales jq git make",
       "cd /opt/phoronix-test-suite && sudo bash /opt/phoronix-test-suite/install-sh",
-      "sudo TEST_RESULTS_NAME=stackit_${local.current_availability_zone}_${each.value["attributes"]["flavor"]}_${timestamp()} TEST_RESULTS_IDENTIFIER=stackit_${local.current_availability_zone}_${each.value["attributes"]["flavor"]} FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=${each.value["price"]} phoronix-test-suite batch-benchmark nginx apache node-web-tooling redis pts/stress-ng-1.11.0"
+      "sudo TEST_RESULTS_NAME=stackit_${local.current_availability_zone}_${each.value["attributes"]["flavor"]}_${timestamp()} TEST_RESULTS_IDENTIFIER=stackit_${local.current_availability_zone}_${each.value["attributes"]["flavor"]} FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=${each.value["price"]} phoronix-test-suite batch-benchmark nginx apache redis pts/stress-ng-1.13.0"
     ]
   }
 
