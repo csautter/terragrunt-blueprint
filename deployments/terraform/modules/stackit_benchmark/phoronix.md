@@ -1,22 +1,3 @@
-# Test suites
-- pts/aarch64
-- pts/memory - runtime 1h30m
-- pts/server-memory
-- pts/java
-- pts/database
-- pts/cpu-massive
-- pts/golang
-- pts/go
-
-# Test cases
-- pts/pgbench
-- ``phoronix-test-suite benchmark nginx``
-- ``phoronix-test-suite benchmark node-express-loadtest``
-- ``phoronix-test-suite benchmark node-web-tooling``
-
-# Test batch
-- ``phoronix-test-suite batch-benchmark nginx apache node-web-tooling mysqlslap hammerdb-postgresql redis``
-
 # Performance per euro calculation
 ```bash
 export COST_PERF_PER_UNIT="euro/hour"
