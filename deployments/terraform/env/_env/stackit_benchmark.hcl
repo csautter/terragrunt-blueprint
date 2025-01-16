@@ -14,5 +14,4 @@ terraform {
 inputs = {
   env        = local.config.env
   project_id = local.config.project_id
-  yabdb_urls = local.config.yabdb_urls
 }

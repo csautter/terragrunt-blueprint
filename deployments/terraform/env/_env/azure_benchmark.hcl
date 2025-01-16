@@ -12,5 +12,5 @@ terraform {
 }
 
 inputs = {
-  env = local.config.env
+
 }
