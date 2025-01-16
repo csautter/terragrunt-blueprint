@@ -3,10 +3,10 @@
 <PhoronixTestSuite>
     <Options>
         <OpenBenchmarking>
-            <AnonymousUsageReporting>TRUE</AnonymousUsageReporting>
+            <AnonymousUsageReporting>FALSE</AnonymousUsageReporting>
             <IndexCacheTTL>3</IndexCacheTTL>
             <AlwaysUploadSystemLogs>FALSE</AlwaysUploadSystemLogs>
-            <AllowResultUploadsToOpenBenchmarking>TRUE</AllowResultUploadsToOpenBenchmarking>
+            <AllowResultUploadsToOpenBenchmarking>FALSE</AllowResultUploadsToOpenBenchmarking>
         </OpenBenchmarking>
         <General>
             <DefaultBrowser></DefaultBrowser>
