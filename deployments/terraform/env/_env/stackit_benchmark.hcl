@@ -12,6 +12,7 @@ terraform {
 }
 
 inputs = {
-  env        = local.config.env
-  project_id = local.config.project_id
+  env                             = local.config.env
+  project_id                      = local.config.project_id
+  compute_engine_flavor_blacklist = local.config.compute_engine_flavor_blacklist
 }

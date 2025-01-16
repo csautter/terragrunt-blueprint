@@ -20,10 +20,9 @@ resource "local_sensitive_file" "stackit_categories" {
 
 # prepare a list of compute engine servers for the benchmark
 locals {
-  stackit_categories              = jsondecode(data.http.stackit_categories.response_body)
-  compute_engine_flavor_blacklist = ["g1r.1d", "g1r.2d", "g1r.4d", "g1r.8d", "g1r.16d", "s1.2", "s1.3", "s1.4", "c2i.1", "c2i.2", "s1a.2d", "s1a.4d", "m1a.1d", "m1a.2d", "b2i.1d", "m1.3", "b1.2"]
-  compute_engine_list             = local.stackit_categories["categories"]
-  compute_engine_map              = [for category in local.compute_engine_list : category if category["id"] == "STA_Compute"]
+  stackit_categories  = jsondecode(data.http.stackit_categories.response_body)
+  compute_engine_list = local.stackit_categories["categories"]
+  compute_engine_map  = [for category in local.compute_engine_list : category if category["id"] == "STA_Compute"]
   compute_engine_servers = [
     for product in local.compute_engine_map[0]["products"] : product if product["apiIdentifier"] == "servers"
   ]
@@ -37,7 +36,7 @@ locals {
   }
 
   compute_engine_servers_sku_map_filtered = {
-    for sku, server in local.compute_engine_servers_sku_map : sku => server if(contains(["GPU"], server["attributes"]["hardware"]) == false && contains(local.compute_engine_flavor_blacklist, server["attributes"]["flavor"]) == false && server["attributes"]["metro"] == false && server["price"] < 0.21 && server["attributes"]["ram"] >= 1.5)
+    for sku, server in local.compute_engine_servers_sku_map : sku => server if(contains(["GPU"], server["attributes"]["hardware"]) == false && contains(var.compute_engine_flavor_blacklist, server["attributes"]["flavor"]) == false && server["attributes"]["metro"] == false && server["price"] < 0.21 && server["attributes"]["ram"] >= 1.5)
   }
 
   compute_engine_servers_sku_map_filtered_test = {
