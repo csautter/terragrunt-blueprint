@@ -7,3 +7,8 @@ variable "project_id" {
   type        = string
   description = "The project ID"
 }
+
+variable "machine_type_prefix" {
+  type        = string
+  description = "The machine type prefix"
+}
