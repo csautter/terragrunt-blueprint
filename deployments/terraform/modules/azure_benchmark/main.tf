@@ -1,6 +1,9 @@
 resource "azurerm_resource_group" "benchmark" {
   name     = "benchmark"
   location = "Germany West Central"
+  tags = {
+    shortname = "benchmark"
+  }
 }
 
 data "azurerm_location" "west_europe" {
@@ -51,6 +54,8 @@ resource "azurerm_linux_virtual_machine" "benchmark" {
   zone                = data.azurerm_location.west_europe.zone_mappings[0].logical_zone
   size                = each.value
   admin_username      = "adminuser"
+  secure_boot_enabled = false
+
   network_interface_ids = [
     azurerm_network_interface.benchmark[each.key].id,
   ]

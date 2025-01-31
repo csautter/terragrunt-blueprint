@@ -40,7 +40,7 @@ locals {
   }
 
   compute_engine_servers_sku_map_filtered_test = {
-    for sku, server in local.compute_engine_servers_sku_map_filtered : sku => server if(can(regex("${var.machine_type_prefix}\\..*", server["attributes"]["flavor"])))
+    for sku, server in local.compute_engine_servers_sku_map_filtered : server["attributes"]["flavor"] => server if(can(regex("${var.machine_type_prefix}\\..*", server["attributes"]["flavor"])))
   }
 
   benchmark_machine_count   = length(local.compute_engine_servers_sku_map_filtered)
