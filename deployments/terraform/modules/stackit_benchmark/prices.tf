@@ -36,11 +36,11 @@ locals {
   }
 
   compute_engine_servers_sku_map_filtered = {
-    for sku, server in local.compute_engine_servers_sku_map : sku => server if(contains(["GPU"], server["attributes"]["hardware"]) == false && contains(var.compute_engine_flavor_blacklist, server["attributes"]["flavor"]) == false && server["attributes"]["metro"] == false && server["price"] < 0.21 && server["attributes"]["ram"] >= 1.5)
+    for sku, server in local.compute_engine_servers_sku_map : sku => server if(contains(["GPU"], server["attributes"]["hardware"]) == false && contains(var.compute_engine_flavor_blacklist, server["attributes"]["flavor"]) == false && server["attributes"]["metro"] == false && server["price"] < var.maximum_cost_per_hour && server["attributes"]["ram"] >= 1.5)
   }
 
-  compute_engine_servers_sku_map_filtered_test = {
-    for sku, server in local.compute_engine_servers_sku_map_filtered : server["attributes"]["flavor"] => server if(can(regex("${var.machine_type_prefix}\\..*", server["attributes"]["flavor"])))
+  compute_engine_servers_sku_map_filtered_selection = {
+    for sku, server in local.compute_engine_servers_sku_map_filtered : server["attributes"]["flavor"] => server if(can(regex("${var.machine_type_prefix}\\..*", server["attributes"]["flavor"])) || var.machine_flavor == server["attributes"]["flavor"])
   }
 
   benchmark_machine_count   = length(local.compute_engine_servers_sku_map_filtered)

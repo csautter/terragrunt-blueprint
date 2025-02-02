@@ -1,6 +1,4 @@
 locals {
-  ssh_public_key_path           = "~/.ssh/id_ed25519.pub"
-  ssh_private_key_path          = "~/.ssh/id_ed25519"
   availability_zones            = ["eu01-1", "eu01-2", "eu01-3"]
   current_availability_zone     = local.availability_zones[0]
   boot_volume_performance_class = "storage_premium_perf1"

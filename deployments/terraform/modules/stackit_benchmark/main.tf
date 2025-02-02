@@ -1,10 +1,10 @@
 resource "stackit_key_pair" "keypair" {
   name       = "default-keypair"
-  public_key = chomp(file(local.ssh_public_key_path))
+  public_key = chomp(file(var.ssh_public_key_path))
 }
 
 resource "stackit_server" "bench" {
-  for_each          = local.compute_engine_servers_sku_map_filtered_test
+  for_each          = local.compute_engine_servers_sku_map_filtered_selection
   project_id        = var.project_id
   availability_zone = local.current_availability_zone
   boot_volume = {
@@ -18,7 +18,7 @@ resource "stackit_server" "bench" {
 }
 
 resource "stackit_volume" "bench" {
-  for_each          = local.compute_engine_servers_sku_map_filtered_test
+  for_each          = local.compute_engine_servers_sku_map_filtered_selection
   project_id        = var.project_id
   name              = "bench-${replace(var.env, "_", "-")}-${each.value["attributes"]["flavor"]}"
   availability_zone = local.current_availability_zone
@@ -37,12 +37,12 @@ resource "stackit_volume" "bench" {
 }
 
 resource "null_resource" "provision_pts" {
-  for_each = local.compute_engine_servers_sku_map_filtered_test
+  for_each = local.compute_engine_servers_sku_map_filtered_selection
 
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = file(local.ssh_private_key_path)
+    private_key = file(var.ssh_private_key_path)
     host        = stackit_public_ip.public_ip[each.key].ip
   }
 
@@ -62,12 +62,12 @@ resource "null_resource" "provision_pts" {
   }
 
   provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/phoronix-test-results/ && scp -r -o StrictHostKeyChecking=no -i ${local.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/var/lib/phoronix-test-suite/test-results/* ${path.module}/phoronix-test-results/"
+    command = "mkdir -p ${path.module}/phoronix-test-results/ && scp -r -o StrictHostKeyChecking=no -i ${var.ssh_private_key_path} ubuntu@${stackit_public_ip.public_ip[each.key].ip}:/var/lib/phoronix-test-suite/test-results/* ${path.module}/phoronix-test-results/"
   }
 }
 
 resource "local_file" "extended_benchmark_info" {
-  for_each = local.compute_engine_servers_sku_map_filtered_test
+  for_each = local.compute_engine_servers_sku_map_filtered_selection
 
   content  = jsonencode(each.value)
   filename = "${path.module}/bench/${plantimestamp()}-${local.availability_zones[0]}-${each.value["attributes"]["flavor"]}_extended.json"
@@ -81,20 +81,20 @@ resource "stackit_network" "network" {
 }
 
 resource "stackit_network_interface" "nic" {
-  for_each           = local.compute_engine_servers_sku_map_filtered_test
+  for_each           = local.compute_engine_servers_sku_map_filtered_selection
   project_id         = var.project_id
   network_id         = stackit_network.network.network_id
   security_group_ids = [stackit_security_group.this.security_group_id]
 }
 
 resource "stackit_public_ip" "public_ip" {
-  for_each             = local.compute_engine_servers_sku_map_filtered_test
+  for_each             = local.compute_engine_servers_sku_map_filtered_selection
   project_id           = var.project_id
   network_interface_id = stackit_network_interface.nic[each.key].network_interface_id
 }
 
 resource "stackit_server_network_interface_attach" "nic_attachment" {
-  for_each             = local.compute_engine_servers_sku_map_filtered_test
+  for_each             = local.compute_engine_servers_sku_map_filtered_selection
   project_id           = var.project_id
   server_id            = stackit_server.bench[each.key].server_id
   network_interface_id = stackit_network_interface.nic[each.key].network_interface_id
