@@ -103,7 +103,7 @@ resource "null_resource" "provision_pts" {
       "cd /opt/phoronix-test-suite && sudo bash /opt/phoronix-test-suite/install-sh",
       "export COST_PERF_PER_DOLLAR=$(curl -sG https://prices.azure.com/api/retail/prices --data-urlencode \"currencyCode=EUR\" --data-urlencode \"\\$filter=serviceName eq 'Virtual Machines' and armRegionName eq 'germanywestcentral' and armSkuName eq '${each.value.size}' and priceType eq 'Consumption'\" | jq -r \".Items[] | select(all(.skuName; contains(\\\"Spot\\\") | not)) | select(all(.productName; contains(\\\"Windows\\\") | not)) | select(all(.meterName; contains(\\\"Low\\\") | not)) | select(all(.productName; contains(\\\"Virtual Machines\\\"))) | .unitPrice\")",
       "echo \"COST_PERF_PER_DOLLAR=$COST_PERF_PER_DOLLAR\"",
-      "sudo TEST_RESULTS_NAME=\"azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value.size}_${timestamp()}\" TEST_RESULTS_IDENTIFIER=\"azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value.size}\" FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=$COST_PERF_PER_DOLLAR phoronix-test-suite batch-benchmark nginx apache redis pts/stress-ng-1.13.0"
+      "sudo TEST_RESULTS_NAME=\"azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value.size}_${timestamp()}\" TEST_RESULTS_IDENTIFIER=\"azure_${data.azurerm_location.west_europe.zone_mappings[0].physical_zone}_${each.value.size}\" FORCE_TIMES_TO_RUN=1 TOTAL_LOOP_TIME=1 COST_PERF_PER_UNIT=\"euro/hour\" COST_PERF_PER_DOLLAR=$COST_PERF_PER_DOLLAR COST_PERF_PRECISION=11 phoronix-test-suite batch-benchmark nginx apache redis pts/stress-ng-1.13.0"
     ]
   }
 
