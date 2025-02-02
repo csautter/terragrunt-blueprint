@@ -1,13 +1,28 @@
 # Terragrunt blueprint
 This repository contains a Terragrunt blueprint with a common project structure.
+The repo includes some example modules for AWS, Azure and STACKIT cloud.
+It's intended to be used as a starting point for new projects.
+Over the time it will be extended with more modules, features and best practices.
 
 ## Features
-- [x] AWS provider
-- [x] AWS dummy module
-- [x] STACKIT cloud dummy module
+### Generic
 - [x] local backend
 - [x] gitlab remote backend
+- [x] override variables in env_local.hcl file
+- [x] helm provider
+- [x] kubernetes provider
+- [x] helm chart module
+### AWS
+- [x] AWS provider
+- [x] AWS dummy module
+### Azure
+- [x] Azure provider
+- [x] Azure benchmark module
+### StackIT
+- [x] STACKIT cloud dummy module
 - [x] STACKIT cloud s3 remote backend
+- [x] STACKIT ske kubernetes module
+- [x] STACKIT benchmark module
 - [ ] add some
 
 ## Apply aws dummy
@@ -78,3 +93,10 @@ terragrunt apply destroy.tfplan
 
 ## Status
 This repository is a work in progress.
+
+## Contributing
+Feel free to contribute by creating a pull request.
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Do whatever you want with it.

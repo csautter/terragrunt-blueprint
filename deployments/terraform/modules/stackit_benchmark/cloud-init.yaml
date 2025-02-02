@@ -1,0 +1,15 @@
+#cloud-config
+apt_upgrade: false
+
+package_update: true
+
+packages:
+  - sudo
+  - curl
+  - wget
+  - vim
+  - locales
+  - php-cli
+  - php-xml
+  - unzip
+  - make
