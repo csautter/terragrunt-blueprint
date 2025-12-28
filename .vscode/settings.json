@@ -1,0 +1,29 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "hashicorp.terraform",
+  "files.associations": {
+    "*.pkr.hcl": "hcl",
+    "*.tf": "terraform",
+    "*.tfvars": "terraform",
+    "*.hcl": "hcl"
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file"
+  },
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Run when a .pkr.hcl file is saved
+        "match": "\\.tf$",
+        "cmd": "terraform fmt ${file}"
+      },
+      {
+        // Run when a .pkr.hcl file is saved
+        "match": "\\.hcl$",
+        "cmd": "terragrunt hcl fmt ${file}"
+      },
+    ]
+  },
+}

@@ -27,7 +27,7 @@ terraform {
   }
   before_hook "terragrunt_hclfmt" {
     commands    = ["apply", "plan", "fmt"]
-    execute     = ["terragrunt", "hclfmt"]
+    execute     = ["terragrunt", "hcl", "fmt"]
     working_dir = get_parent_terragrunt_dir()
   }
   before_hook "tflint" {
@@ -40,5 +40,5 @@ terraform {
   }
 }
 
-terraform_version_constraint  = ">= 1.10.0"
-terragrunt_version_constraint = ">= 0.69.3"
+terraform_version_constraint  = ">= 1.14.0"
+terragrunt_version_constraint = ">= 0.96.0"
