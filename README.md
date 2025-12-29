@@ -17,6 +17,7 @@ Over the time it will be extended with more modules, features and best practices
 - [x] AWS dummy module
 ### Azure
 - [x] Azure provider
+- [x] Azure dummy module
 - [x] Azure benchmark module
 ### StackIT
 - [x] STACKIT cloud dummy module
@@ -35,6 +36,18 @@ export TF_HTTP_PASSWORD=your_gitlab_token
 export TF_HTTP_USERNAME=your_gitlab_user_name
 
 cd deployments/terraform/env/dev/aws_dummy
+terragrunt apply
+```
+
+## Apply azure dummy
+```bash
+vi deployments/terraform/env/dev/azure_dummy/env_local.hcl
+# add the following locals with your values
+locals {
+  subscription_id = "<your-subscription-id>"
+}
+
+cd deployments/terraform/env/dev/azure_dummy
 terragrunt apply
 ```
 
