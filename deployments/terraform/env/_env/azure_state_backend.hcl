@@ -7,12 +7,8 @@ locals {
   )
 }
 
-dependency "azure_state_backend" {
-  config_path = "${get_terragrunt_dir()}/../../${local.config.env}/azure_state_backend"
-}
-
 terraform {
-  source = "${get_terragrunt_dir()}/../../../modules//azure_dummy"
+  source = "${get_terragrunt_dir()}/../../../modules//azure_state_backend"
 }
 
 inputs = {

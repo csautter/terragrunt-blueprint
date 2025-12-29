@@ -1,9 +1,11 @@
 locals {
-  env_local = try(read_terragrunt_config(find_in_parent_folders("env_local.hcl")), { locals = {} })
-  env       = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  env_local          = try(read_terragrunt_config(find_in_parent_folders("env_local.hcl")), { locals = {} })
+  env_local_override = try(read_terragrunt_config("env_override.hcl"), { locals = {} })
+  env                = read_terragrunt_config(find_in_parent_folders("env.hcl"))
   config = merge(
     local.env.locals,
-    local.env_local.locals
+    local.env_local.locals,
+    local.env_local_override.locals
   )
 
   tflint_hook_enabled       = get_env("DISABLE_TFLINT_HOOK", "false") == "true" ? false : true

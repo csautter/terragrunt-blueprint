@@ -21,7 +21,7 @@ remote_state {
     use_azuread_auth     = true
     tenant_id            = local.config.tenant_id
     storage_account_name = local.config.state_storage_account_name
-    container_name       = "tfstate"
+    container_name       = local.config.state_storage_container_name
     key                  = "${local.config.env}.terraform.tfstate"
   }
 }
