@@ -22,5 +22,7 @@ locals {
 }
 
 inputs = {
-  env = local.config.env
+  env                  = local.config.env
+  storage_account_name = local.config.state_storage_account_name
+  container_name       = local.config.state_storage_container_name
 }

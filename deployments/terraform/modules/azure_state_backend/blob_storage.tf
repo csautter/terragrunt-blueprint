@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "this" {
-  name                              = "${var.storage_account_name}${replace(var.env, "_", "")}"
+  name                              = var.storage_account_name
   resource_group_name               = azurerm_resource_group.state.name
   location                          = data.azurerm_location.this.location
   account_tier                      = "Standard"
@@ -28,7 +28,7 @@ resource "azurerm_storage_encryption_scope" "this" {
 }
 
 resource "azurerm_storage_container" "this" {
-  name                  = "${var.container_name}${replace(var.env, "_", "")}"
+  name                  = var.container_name
   storage_account_id    = azurerm_storage_account.this.id
   container_access_type = "private"
 
